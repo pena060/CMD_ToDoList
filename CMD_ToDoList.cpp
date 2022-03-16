@@ -1,4 +1,4 @@
-// CMD_ToDoList.cpp : This file contains the 'main' function. Program execution begins and ends there.
+// CMD_ToDoList.cpp : This file contains the 'main' function. Program execution begins and ends here.
 //
 
 #include <iostream>
@@ -12,7 +12,7 @@ using std::cout;
 void ShowList(std::vector<std::string>& List);
 void AddToList(std::vector<std::string>& List);
 void RemoveFromList(std::vector<std::string>& List);
-
+void finish(std::vector<std::string>& List);
 
 int main()
 {
@@ -20,9 +20,9 @@ int main()
     std::string str;
     int input;
 
-    std::ifstream persistentList("List.txt");
-    if (!persistentList.fail()) {
-        while (std::getline(persistentList, str))
+    std::ifstream loadFile("List.txt");
+    if (!loadFile.fail()) {
+        while (std::getline(loadFile, str))
         {
           
             if (str.size() > 0)
@@ -30,7 +30,7 @@ int main()
         }
     }
 
-    persistentList.close();
+    loadFile.close();
     
 
     cout << "Welcome to your to-do list!\nv0.9b\n\n";
@@ -67,6 +67,10 @@ int main()
     } 
 
 
+
+    finish(List);
+
+
     std::system("cls");
     cout << " >> Program closed successfully...Goodbye \n";
 
@@ -75,10 +79,9 @@ int main()
 }
 
 
-void RemoveFromList(std::vector<std::string>& List){
-    std::fstream File("List.txt", std::ios::out | std::ios::trunc);
+void RemoveFromList(std::vector<std::string>& List){//remove item form list
 
-    if (!File.fail()){
+    if (List.size() > 0){
 
         int selection;
         cout << "Which item would you like to delete (type index number) \n";
@@ -86,24 +89,13 @@ void RemoveFromList(std::vector<std::string>& List){
         std::cin >> selection;
         cout << "\n";
 
-
-        if (selection < 0 || selection >= List.size()) {
+        if (selection <= 0 || selection > List.size()) {
             cout << "*ERROR* index out of scope, select an item index from within the list!\n\n";
 
         }
         else {
 
-            List.erase(List.begin() + selection);
-
-            if (List.size() > 0){
-                for (int i = 0; i < List.size(); i++) {
-                    File << List[i] << "\n";
-                }
-                File.close();
-            }else{
-                File.close();
-                std::remove("List.txt");
-            }
+            List.erase(List.begin() + (selection - 1));
             
             cout << "Item successfully Removed! Returning to menu...\n\n";
 
@@ -115,14 +107,11 @@ void RemoveFromList(std::vector<std::string>& List){
     }
 }
 
-void AddToList(std::vector<std::string>& List){
-    std::ofstream oFile;
-    oFile.open("List.txt", std::ios::app);
+void AddToList(std::vector<std::string>& List){// add item to list
 
     std::string newItem;
     std::cin.clear();
     std::cin.ignore(10000, '\n');
-
 
     cout << "Please type a new item to add to your to-do list. \n";
     cout << ">> ";
@@ -130,28 +119,37 @@ void AddToList(std::vector<std::string>& List){
     cout << "\n";
     List.push_back(newItem);
 
-    oFile << newItem << "\n";
-
-    oFile.close();
-
     cout << "Item successfully Added! Returning to menu...\n\n";
 
 }
 
-void ShowList(std::vector<std::string>& List){
-    std::ifstream inFile;
-    inFile.open("List.txt");
+void ShowList(std::vector<std::string>& List){// show current to-do list
 
-    if (inFile.is_open()) {
+    if (List.size() > 0) {
         cout << "TO-DO List: \n";
 
-        cout << inFile.rdbuf() << "\n";
+        for (int i = 0; i < List.size(); i++) {
+            cout << "\t" << i+1 << ". " << List[i] << "\n";
+        }
 
-        inFile.close();
         cout << "End of list.....\n\n";
-    }
-    else {
+    }else {
         cout << "*ERROR* List is empty! (Add one item to create a list before trying to view list) \n\n";
     }
+}
+
+void finish(std::vector<std::string>& List) {//save list into document (ready system for shutdown)
+    std::ofstream backUpFile("List.txt", std::ios::out | std::ios::trunc);
+    if (List.size() > 0) {
+        for (int i = 0; i < List.size(); i++) {
+            backUpFile << List[i] << "\n";
+        }
+        backUpFile.close();
+    }
+    else {
+        backUpFile.close();
+        std::remove("List.txt");
+    }
+
 }
 
